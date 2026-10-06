@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TIG Weld Cell</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="top">
+  <div class="title-block">
+    <h1 id="title">TIG Weld Cell</h1>
+    <div class="sub" id="sub">Program — · Step —</div>
+  </div>
+  <div class="state" id="state" data-state="offline" role="status" aria-live="polite">
+    <span class="state-icon" id="state-icon" aria-hidden="true">⦸</span>
+    <span id="state-label">Connecting…</span>
+  </div>
+  <div class="arc" id="arc" data-on="false"><span class="arc-dot" aria-hidden="true"></span><span id="arc-label">Arc off</span></div>
+  <div class="clock-block">
+    <div class="clock" id="clock">--:--:--</div>
+    <div class="sub" id="shift-label">Shift —</div>
+  </div>
+  <div class="tools">
+    <button id="theme-btn" type="button" title="Toggle light/dark">◐</button>
+    <button id="fs-btn" type="button" title="Full screen">⛶</button>
+  </div>
+</header>
+
+<div class="banner" id="banner" hidden></div>
+
+<main class="grid">
+  <section class="panel live" aria-label="Live weld parameters">
+    <h2>Live weld</h2>
+    <div class="tiles">
+      <div class="tile hero">
+        <div class="label">Weld current</div>
+        <div class="value"><span id="v-current">—</span><span class="unit">A</span></div>
+        <div class="meta" id="v-current-meta">Set — A</div>
+      </div>
+      <div class="tile">
+        <div class="label">Arc voltage</div>
+        <div class="value"><span id="v-voltage">—</span><span class="unit">V</span></div>
+      </div>
+      <div class="tile">
+        <div class="label">Travel speed</div>
+        <div class="value"><span id="v-travel">—</span><span class="unit">cm/min</span></div>
+      </div>
+      <div class="tile">
+        <div class="label">Heat input</div>
+        <div class="value"><span id="v-heat">—</span><span class="unit">kJ/mm</span></div>
+      </div>
+      <div class="tile">
+        <div class="label">Wire feed</div>
+        <div class="value"><span id="v-wire">—</span><span class="unit">m/min</span></div>
+      </div>
+      <div class="tile">
+        <div class="label">Shielding gas</div>
+        <div class="value"><span id="v-gas">—</span><span class="unit">L/min</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel chart-panel" aria-label="Weld current trend">
+    <div class="chart-head">
+      <h2>Weld current <span class="muted">(A)</span></h2>
+      <div class="key"><span class="key-line"></span>Actual <span class="key-dash"></span>Setpoint ± tolerance</div>
+    </div>
+    <div class="chart" id="chart-current"></div>
+  </section>
+
+  <section class="panel chart-panel" aria-label="Arc voltage trend">
+    <div class="chart-head">
+      <h2>Arc voltage <span class="muted">(V)</span></h2>
+      <div class="muted small" id="window-label">Last 10 min</div>
+    </div>
+    <div class="chart" id="chart-voltage"></div>
+  </section>
+
+  <section class="panel production" aria-label="Shift production">
+    <h2>This shift</h2>
+    <div class="tiles">
+      <div class="tile hero">
+        <div class="label">Parts completed</div>
+        <div class="value"><span id="p-parts">—</span><span class="unit" id="p-target"></span></div>
+        <div class="progress" id="p-progress" hidden><div class="bar" id="p-bar"></div></div>
+      </div>
+      <div class="tile">
+        <div class="label">Avg cycle time</div>
+        <div class="value"><span id="p-cycle">—</span><span class="unit">s</span></div>
+        <div class="meta" id="p-cycle-meta">Last —</div>
+      </div>
+      <div class="tile">
+        <div class="label">Arc-on time</div>
+        <div class="value"><span id="p-arc-ratio">—</span><span class="unit">%</span></div>
+        <div class="meta" id="p-arc-meta">— arc time</div>
+      </div>
+      <div class="tile">
+        <div class="label">Robot utilization</div>
+        <div class="value"><span id="p-util">—</span><span class="unit">%</span></div>
+        <div class="meta" id="p-util-meta">— in alarm</div>
+      </div>
+      <div class="tile">
+        <div class="label">Welds in tolerance</div>
+        <div class="value"><span id="p-quality">—</span><span class="unit">%</span></div>
+        <div class="meta" id="p-quality-meta">— arc starts</div>
+      </div>
+      <div class="tile">
+        <div class="label">Alarms</div>
+        <div class="value"><span id="p-alarms">—</span></div>
+        <div class="meta" id="p-alarms-meta">this shift</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel table-panel welds-panel" aria-label="Recent welds">
+    <h2>Recent welds</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Time</th><th>Prog</th><th class="num">Dur s</th><th class="num">Avg A</th><th class="num">Avg V</th><th class="num">Max dev</th><th>Result</th></tr></thead>
+        <tbody id="welds"><tr><td colspan="7" class="muted">No welds yet</td></tr></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="panel table-panel alarms-panel" aria-label="Alarm log">
+    <h2>Alarm log</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Time</th><th>Code</th><th>Message</th><th class="num">Duration</th></tr></thead>
+        <tbody id="alarms"><tr><td colspan="4" class="muted">No alarms</td></tr></tbody>
+      </table>
+    </div>
+  </section>
+</main>
+
+<div class="tooltip" id="tooltip" hidden></div>
+<script src="chart.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

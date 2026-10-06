@@ -1,0 +1,103 @@
+# Copy to config.toml and edit.  Run with:  python -m weld_dashboard
+# (config.toml in the current directory is picked up automatically)
+
+[server]
+host = "0.0.0.0"     # listen on all interfaces so the shop-floor screen can reach it
+port = 8080
+
+[dashboard]
+title = "TIG Cell 3 — OTC Daihen FD-B4"
+poll_interval_s = 0.5              # how often the robot is read
+history_seconds = 600              # length of the trend charts
+shift_starts = ["06:00", "14:00", "22:00"]   # counters reset at each of these
+target_parts_per_shift = 350       # 0 hides the progress bar
+current_tolerance_pct = 10.0       # weld flagged if |actual - setpoint| exceeds this
+tolerance_ignore_start_s = 1.0     # ignore arc-start upslope when checking tolerance
+weld_log_dir = "weld_logs"         # one CSV row per weld bead, one file per day ("" disables)
+
+# ---------------------------------------------------------------------------
+# Data source: choose ONE of the [source] blocks below.
+# ---------------------------------------------------------------------------
+
+# 1) Built-in simulator (default) — for testing the screen without a robot.
+[source]
+type = "simulator"
+speed = 1.0                # >1 runs the simulated cell faster
+alarm_probability = 0.08
+
+# 2) Modbus TCP — robot data mapped into registers by a PLC, a fieldbus/Modbus
+#    gateway on the FD controller, or the power source's network interface.
+#    The addresses below are PLACEHOLDERS: use the I/O map your integrator set
+#    up. Types: uint16 | int16 | uint32 | int32 | float32 | bool. "bit" picks
+#    one bit out of a status word. Value = raw * scale + offset.
+#
+# [source]
+# type = "modbus_tcp"
+# host = "192.168.0.50"
+# port = 502
+# unit_id = 1
+# word_order = "big"          # for 32-bit values; "little" if low word comes first
+# arc_on_threshold_a = 5.0    # used only if no arc_on register is mapped
+#
+# [source.registers]
+# robot_state        = { address = 0 }                       # see state_codes
+# arc_on             = { address = 1, bit = 0 }
+# weld_current_a     = { address = 10, scale = 0.1 }
+# weld_current_set_a = { address = 11, scale = 0.1 }
+# arc_voltage_v      = { address = 12, scale = 0.1 }
+# travel_speed_cm_min = { address = 13, scale = 0.1 }
+# wire_feed_m_min    = { address = 14, scale = 0.01 }
+# gas_flow_l_min     = { address = 15, scale = 0.1 }
+# program_no         = { address = 20 }
+# step_no            = { address = 21 }
+# cycle_count        = { address = 22, type = "uint32" }
+# alarm_code         = { address = 24 }
+#
+# [source.state_codes]       # numeric state value -> dashboard state
+# 0 = "stopped"
+# 1 = "idle"
+# 2 = "running"
+# 3 = "teach"
+# 4 = "alarm"
+# 5 = "emergency"
+#
+# [source.alarm_texts]       # optional: show text next to alarm codes
+# 1201 = "Arc start failure"
+# 1305 = "Gas flow low"
+
+# 3) OPC UA — when an OPC UA server (PLC, Kepware, IIoT gateway) exposes the
+#    robot tags. Requires:  pip install asyncua
+#
+# [source]
+# type = "opcua"
+# url = "opc.tcp://192.168.0.60:4840"
+# # username = "dashboard"
+# # password = "secret"
+#
+# [source.nodes]
+# robot_state    = "ns=2;s=WeldCell3.Robot.State"
+# arc_on         = "ns=2;s=WeldCell3.Weld.ArcOn"
+# weld_current_a = "ns=2;s=WeldCell3.Weld.Current"
+# weld_current_set_a = "ns=2;s=WeldCell3.Weld.CurrentSet"
+# arc_voltage_v  = "ns=2;s=WeldCell3.Weld.Voltage"
+# cycle_count    = "ns=2;s=WeldCell3.Robot.CycleCount"
+# alarm_code     = "ns=2;s=WeldCell3.Robot.AlarmCode"
+# alarm_text     = "ns=2;s=WeldCell3.Robot.AlarmText"
+#
+# [source.scales]
+# weld_current_a = 1.0
+
+# 4) CSV tail — follow a log file another program appends to (e.g. weld
+#    monitoring software export or a PLC data logger).
+#
+# [source]
+# type = "csv"
+# path = "C:/WeldMonitor/live.csv"
+# delimiter = ","
+# stale_after_s = 10          # show "no data" if no new row for this long
+#
+# [source.columns]            # dashboard field = "CSV column header"
+# weld_current_a = "Current(A)"
+# arc_voltage_v  = "Voltage(V)"
+# robot_state    = "Status"
+# program_no     = "Program"
